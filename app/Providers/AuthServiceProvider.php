@@ -3,7 +3,12 @@
 namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
+
+use App\Models\Admin;
+use App\Models\Order;
+use App\Models\User;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -21,6 +26,13 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::define('show-orders', function (User|Admin $user, Order $order) {
+            return ($user->type == 'admin') || ($order->user_id == $user->id);
+        });
+
+
+        Gate::define('create-order', function (User|Admin $user) {
+            return $user->type == 'admin';
+        });
     }
 }

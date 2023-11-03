@@ -1,13 +1,16 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use App\Models\Admin;
 use App\Models\AllOrders;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -42,12 +45,44 @@ Route::delete('/category/{id}', [CategoryController::class, 'destroy'])->name('c
 
 
 
-Route::get('/orders', [OrderController::class, 'index'])->name('order.index');
-Route::get('/orders/create', [OrderController::class, 'create'])->name('order.create');
-Route::post('/orders', [OrderController::class, 'store'])->name('order.store');
+
+
+// guard
+// gate
+
+Route::view('/home', 'home')->name('home');
+
+
+Route::middleware('auth:web,admin')->group(function () {
+    Route::get('/orders', [OrderController::class, 'index'])->name('order.index')->middleware('can:edit-product');
+    Route::get('/orders/create', [OrderController::class, 'create'])->name('order.create');
+    Route::post('/orders', [OrderController::class, 'store'])->name('order.store');
+});
+
+Route::middleware(['guest', 'guest:admin'])->group(function () {
+    // Route::get('login', [AuthController::class, 'loginView']);
+});
+
+// Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
 // get post put delete
 // create -> post
 // update -> put
 // delete -> delete
 Route::put('/category/{id}/update', [CategoryController::class, 'update'])
     ->name('category.update');
+
+
+
+
+Route::get('/profile', function () {
+    // request life cycle   index.php => bootstrap => providers => middleware  => Route => route handler  => middleware => response
+    // middleware
+    // Admin::create([]);
+    // dd(Auth::user());
+});
+
+Auth::routes(['verify' => true]);
+
+// Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::post('login', [AuthController::class, 'login'])->name('login');

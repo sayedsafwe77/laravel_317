@@ -6,23 +6,19 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class OrderController extends Controller
 {
     //
     function index()
     {
-        // eloquent model
-        // query builder
-        // $order = Order::select('orders.*', 'users.*', 'products.name')
-        //     ->join('users', 'orders.user_id', '=', 'users.id')
-        //     ->join('order_products', 'orders.id', '=', 'order_products.order_id')
-        //     ->join('products', 'order_products.product_id', '=', 'products.id')
-        //     ->where('orders.id', 1)->get();
-        // select order with his user
-        // dd($order);
-        // Order  User
+        // if (Auth::user()->type == 'admin') {
+        // } else {
+        //     $orders = Order::where('user_id', Auth::id())->get();
+        // }
         $orders = Order::get();
         return view('order.index', ['orders' => $orders]);
     }
@@ -61,9 +57,16 @@ class OrderController extends Controller
     }
     function create()
     {
+        // Gate::authorize();
+        if (!Gate::authorize('create-order')) {
+            $id = Auth::id();
+            logger("user {$id} trying to access page create order");
+            abort(403);
+        }
+
+
         $users = User::select('id', 'name')->get();
         $products = Product::select('id', 'name', 'price', 'quantity')->get();
-
         return view('order.create', ['users' => $users, 'products' => $products]);
     }
 }
